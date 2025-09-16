@@ -9,13 +9,21 @@ from notification_helper import send_telegram_alert, send_server_alert
 app = Flask(__name__)
 db = SQLAlchemy()
 
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+# --- ⭐️ 데이터베이스 연결 부분 수정 ⭐️ ---
+# Render가 자동으로 생성해준 DATABASE_URL 환경 변수를 직접 사용합니다.
+uri = os.environ.get('DATABASE_URL')
+if uri and uri.startswith("postgres://"):
+    uri = uri.replace("postgres://", "postgresql://", 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = uri
+# -----------------------------------------
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config["JWT_SECRET_KEY"] = os.environ.get('JWT_SECRET_KEY')
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
 jwt = JWTManager(app)
 db.init_app(app)
 
+# --- (이하 모든 코드는 이전과 동일합니다) ---
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
